@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Tapper GeoChallenge</string>
+    <string name="mapbox_access_token"></string>
+    <string name="single_player_game_textview">Single Player Game</string>
+    <string name="two_player_game_textview">Two Player Game</string>
+    <string name="welcome_title">Are You Ready?</string>
+    <string name="game_description">Test and improve\nyour geography knowledge</string>
+    <string name="single_player_game_marker_title">Your selection</string>
+    <string name="player_one_selection">%1$s\'s selection</string>
+    <string name="player_two_selection">%1$s\'s selection</string>
+    <string name="one">one</string>
+    <string name="two">two</string>
+    <string name="click_here_to_confirm_selection">CLICK HERE TO CONFIRM SELECTION</string>
+    <string name="title_activity_second_game">SecondGame</string>
+    <string name="location_to_guess">City to guess: %1$s</string>
+    <string name="player_one_points">%1$s: %2$d points</string>
+    <string name="player_two_points">%1$s: %2$d points</string>
+    <string name="player_guess_distance">Your guess was %1$f kilometers away</string>
+    <string name="checking_choices">Checking distance</string>
+    <string name="player_one_already_chose_snackbar_message">You already confirmed your choice.\n
+        Click the red button to check your answer!</string>
+    <string name="both_players_have_already_chose_snackbar_message">Both players already confirmed their choices.\n
+        Click the red button to check your answers!</string>
+
+    <string name="winner_announcement">%1$s wins!</string>
+    <string name="whoops_error">Whoops! Looks like there\'s a problem. Sorry :(</string>
+    <string name="single_player_game">Single player game</string>
+    <string name="two_player_game">Two player game</string>
+    <string name="player_one_name_editext_in_dialog">Player 1 Name</string>
+    <string name="default_player_one_name">Player 1</string>
+    <string name="default_player_two_name">Player 2</string>
+    <string name="player_two_name_editext_in_dialog">Player 2 Name</string>
+    <string name="dialog_title">Enter players\' names</string>
+    <string name="dialog_positive_button">Time to play!</string>
+    <string name="random_location_mark_title">Target location</string>
+    <string name="both_players_need_to_guess_snackbar_message">Make sure both players have guessed!</string>
+
+</resources>
