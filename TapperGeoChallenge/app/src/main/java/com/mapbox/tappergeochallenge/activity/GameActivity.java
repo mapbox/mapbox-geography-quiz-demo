@@ -124,13 +124,13 @@ public class GameActivity extends AppCompatActivity {
 
   private void adjustLogoOpacity() {
     int MAPBOX_LOGO_OPACITY = 70;
-    ImageView logo = (ImageView) mapView.findViewById(R.id.logoView);
+    ImageView logo = mapView.findViewById(R.id.logoView);
     logo.setImageAlpha(MAPBOX_LOGO_OPACITY);
   }
 
   private void adjustAttributionOpacity() {
     int ATTRIBUTION_OPACITY = 70;
-    ImageView attribution = (ImageView) mapView.findViewById(R.id.attributionView);
+    ImageView attribution = mapView.findViewById(R.id.attributionView);
     attribution.setImageAlpha(ATTRIBUTION_OPACITY);
   }
 
@@ -214,6 +214,7 @@ public class GameActivity extends AppCompatActivity {
           moveCameraToSelectedMarker(marker);
           playerTwoHasGuessed = true;
         }
+
 
         return false;
       }
