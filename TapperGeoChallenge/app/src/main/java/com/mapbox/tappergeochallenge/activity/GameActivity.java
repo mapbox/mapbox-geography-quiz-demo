@@ -27,15 +27,19 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.commons.geojson.Feature;
 import com.mapbox.tappergeochallenge.R;
+import com.mapbox.tappergeochallenge.WikidataRetrofitService;
 import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Retrofit;
+import timber.log.Timber;
 
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME;
@@ -75,6 +79,7 @@ public class GameActivity extends AppCompatActivity {
   private boolean playerOneHasGuessed;
   private boolean playerTwoHasGuessed;
   private Intent intent;
+  private retrofit2.Call<Feature[]> request;
 
 
   @Override
@@ -419,6 +424,30 @@ public class GameActivity extends AppCompatActivity {
   private void setPlayerTextViews(TextView view, int stringId, String playerName, int numOfPoints) {
     view.setText(getResources().getString(stringId, playerName, numOfPoints));
   }
+
+  private void getWikidataInfo() {
+
+    Retrofit retrofit = new Retrofit.Builder()
+      .baseUrl("https://en.wikipedia.org/wiki/")
+      .addConverterFactory(GsonConverterFactory.create())
+      .client(httpClient.build())
+      .build();
+
+    WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
+    request = wikidataRetrofitService.getCities("", "");
+
+    request.enqueue(new retrofit2.Callback<Feature>() {
+      @Override
+      public void onResponse(retrofit2.Call<Feature> call, retrofit2.Response<Feature> response) {
+      }
+
+      @Override
+      public void onFailure(retrofit2.Call<Feature> call, Throwable throwable) {
+        stylesView.onAccountStyleFetchFailure();
+      }
+    });
+  }
+
 
   @OnClick(R.id.check_answer_fab)
   public void checkAnswer(View view) {
