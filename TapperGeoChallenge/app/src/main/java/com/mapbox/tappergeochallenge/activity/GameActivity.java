@@ -39,6 +39,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
@@ -436,14 +437,14 @@ public class GameActivity extends AppCompatActivity {
     WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
     request = wikidataRetrofitService.getCities("", "");
 
-    request.enqueue(new retrofit2.Callback<Feature>() {
+    request.enqueue(new retrofit2.Callback<Feature[]>() {
       @Override
-      public void onResponse(retrofit2.Call<Feature> call, retrofit2.Response<Feature> response) {
+      public void onResponse(retrofit2.Call<Feature[]> call, retrofit2.Response<Feature[]> response) {
       }
 
       @Override
-      public void onFailure(retrofit2.Call<Feature> call, Throwable throwable) {
-        stylesView.onAccountStyleFetchFailure();
+      public void onFailure(retrofit2.Call<Feature[]> call, Throwable throwable) {
+
       }
     });
   }

@@ -11,7 +11,7 @@ public interface WikidataRetrofitService {
 
 
   @GET("User/{username}")
-  Call<Feature> getCities(@Path("username") String userName, @Query("access_token") String accessToken);
+  Call<Feature[]> getCities(@Path("username") String userName, @Query("access_token") String accessToken);
 
 
 
