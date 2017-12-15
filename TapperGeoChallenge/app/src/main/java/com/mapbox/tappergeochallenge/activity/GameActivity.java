@@ -38,6 +38,7 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
@@ -64,6 +65,7 @@ public class GameActivity extends AppCompatActivity {
 
   private static int CAMERA_BOUNDS_PADDING = 220;
   private static int EASE_CAMERA_SPEED_IN_MS = 1500;
+  private static final String WIKIDATA_API_BASE_URL = "https://www.wikidata.org/w/api.php?";
   private String TAG = "GameActivity";
   private MapboxMap mapboxMap;
   private Icon playerOneIcon;
@@ -83,6 +85,7 @@ public class GameActivity extends AppCompatActivity {
   private retrofit2.Call<Feature[]> request;
 
 
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -96,6 +99,8 @@ public class GameActivity extends AppCompatActivity {
 
     // Bind views via a third-party library named Butterknife
     ButterKnife.bind(this);
+
+    getWikidataInfo();
 
     setOneOrTwoPlayerGame();
     playerOne = new Player();
@@ -429,9 +434,8 @@ public class GameActivity extends AppCompatActivity {
   private void getWikidataInfo() {
 
     Retrofit retrofit = new Retrofit.Builder()
-      .baseUrl("https://en.wikipedia.org/wiki/")
+      .baseUrl(WIKIDATA_API_BASE_URL)
       .addConverterFactory(GsonConverterFactory.create())
-      .client(httpClient.build())
       .build();
 
     WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);

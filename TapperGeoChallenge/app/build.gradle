@@ -45,12 +45,13 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
-
     // Mapbox dependencies
     implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0@aar') {
         transitive = true
     }
 
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+
 }
