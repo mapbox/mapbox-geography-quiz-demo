@@ -24,6 +24,8 @@ package com.mapbox.tappergeochallenge;
  * THE SOFTWARE.
  */
 
+import android.util.Log;
+
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -57,6 +59,10 @@ import org.apache.http.util.EntityUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * @author Karima Rafes.
@@ -269,7 +275,7 @@ public class Endpoint {
   /**
    * Set the server password
    *
-   * @param String $password : server password
+   * @param password : server password
    * @access public
    */
   public void setPassword(String password) {
@@ -289,7 +295,7 @@ public class Endpoint {
   /**
    * Set the server login
    *
-   * @param String $login : server login
+   * @param login : server login
    * @access public
    */
   public void setLogin(String login) {
@@ -356,7 +362,7 @@ public class Endpoint {
   /**
    * Set the method HTTP to read
    *
-   * @param String $method : HTTP method (GET or POST) for reading data (by default is POST)
+   * @param method : HTTP method (GET or POST) for reading data (by default is POST)
    * @access public
    */
   public void setMethodHTTPRead(String method) {
@@ -366,7 +372,7 @@ public class Endpoint {
   /**
    * Set the method HTTP to write
    *
-   * @param String $method : HTTP method (GET or POST) for writing data (by default is POST)
+   * @param method : HTTP method (GET or POST) for writing data (by default is POST)
    * @access public
    */
   public void setMethodHTTPWrite(String method) {
@@ -379,42 +385,48 @@ public class Endpoint {
 
     int statusCode = 0;
     try {
-      String url = urlStr + "?" + parameter + "=" + URLEncoder.encode(query, "UTF-8");
-      CloseableHttpClient httpclient = HttpClients.custom()
-        .setDefaultRequestConfig(RequestConfig.custom()
-          // Waiting for a connection from connection manager
-          .setConnectionRequestTimeout(10000)
-          // Waiting for connection to establish
-          .setConnectTimeout(5000)
-          .setExpectContinueEnabled(false)
-          // Waiting for data
-          .setSocketTimeout(5000)
-          .setCookieSpec("easy")
-          .build())
-        .setMaxConnPerRoute(20)
-        .setMaxConnTotal(100)
-        .build();
-      try {
-        HttpGet httpget = new HttpGet(url);
 
-        //System.out.println("Executing request " + httpget.getRequestLine());
-        CloseableHttpResponse response = httpclient.execute(httpget);
+      String url = urlStr + "?" + parameter + "=" + URLEncoder.encode(query, "UTF-8");
+
+      OkHttpClient client = new OkHttpClient();
+
+      try {
+
+        Request request = new Request.Builder()
+          .url(url)
+          .build();
+
+
+        //System.out.println("Executing request " + request
+        Response response = client.newCall(request).execute();
+
+
         try {
-          statusCode = response.getStatusLine().getStatusCode();
+
+          response.body().string();
+          Log.d("Endpoint", "sendQueryGET: response.body().string();\n = " + response.body().string());
+
+
+         /* statusCode = response.getStatusLine().getStatusCode();
           if (statusCode < 200 || statusCode >= 300) {
             throw new EndpointException(this, response.getStatusLine().toString());
+
           }
-          HttpEntity entity = response.getEntity();
+
+          HttpEntity entity = response.getEntity();*/
 
           //System.out.println("----------------------------------------");
           //System.out.println(response.getStatusLine());
-          _response = EntityUtils.toString(entity);
+//          _response = EntityUtils.toString(entity);
           //EntityUtils.consume(entity);
+
+
+
         } finally {
           response.close();
         }
       } finally {
-        httpclient.close();
+        /*httpclient.close();*/
       }
     } catch (Exception e) {
       System.out.println(e.getMessage());
