@@ -269,7 +269,7 @@ public class Endpoint {
   /**
    * Set the server password
    *
-   * @param string $password : server password
+   * @param String $password : server password
    * @access public
    */
   public void setPassword(String password) {
@@ -289,7 +289,7 @@ public class Endpoint {
   /**
    * Set the server login
    *
-   * @param string $login : server login
+   * @param String $login : server login
    * @access public
    */
   public void setLogin(String login) {
@@ -356,7 +356,7 @@ public class Endpoint {
   /**
    * Set the method HTTP to read
    *
-   * @param string $method : HTTP method (GET or POST) for reading data (by default is POST)
+   * @param String $method : HTTP method (GET or POST) for reading data (by default is POST)
    * @access public
    */
   public void setMethodHTTPRead(String method) {
@@ -366,12 +366,13 @@ public class Endpoint {
   /**
    * Set the method HTTP to write
    *
-   * @param string $method : HTTP method (GET or POST) for writing data (by default is POST)
+   * @param String $method : HTTP method (GET or POST) for writing data (by default is POST)
    * @access public
    */
   public void setMethodHTTPWrite(String method) {
     _MethodHTTPWrite = method;
   }
+
 
   private HashMap<String, HashMap> sendQueryGET(String urlStr, String parameter, String query)
     throws EndpointException {

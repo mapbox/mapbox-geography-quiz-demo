@@ -33,6 +33,7 @@ import com.mapbox.tappergeochallenge.R;
 import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -428,28 +429,27 @@ public class GameActivity extends AppCompatActivity {
     view.setText(getResources().getString(stringId, playerName, numOfPoints));
   }
 
-  public static void printResult(HashMap rs, int size) {
+  @SuppressWarnings("unchecked")
+  public static void printResult(HashMap<String, HashMap> rs, int size) {
 
-
-//    for (String variable : (ArrayList) rs.get("result").get("variables")) {
-    System.out.print(String.format("%-" + size + "." + size + "s", rs.get("result").toString()) + " | ");
-    /*}
+    for (String variable : (ArrayList<String>) rs.get("result").get("variables")) {
+      System.out.print(String.format("%-" + size + "." + size + "s", variable) + " | ");
+    }
     System.out.print("\n");
-    for (HashMap value : (ArrayList) rs.get("result").get("rows")) {
+    for (HashMap<String, Object> value : (ArrayList<HashMap<String, Object>>) rs.get("result").get("rows")) {
       //System.out.print(value);
-         for (String key : value.keySet()) {
+        /* for (String key : value.keySet()) {
          System.out.println(value.get(key));
-         }
-      for (String variable : (ArrayList) rs.get("result"). ("variables")){
+         }*/
+      for (String variable : (ArrayList<String>) rs.get("result").get("variables")) {
         //System.out.println(value.get(variable));
         System.out.print(String.format("%-" + size + "." + size + "s", value.get(variable)) + " | ");
       }
       System.out.print("\n");
-    }*/
+    }
   }
 
   private void getWikidataInfo() {
-
     try {
       Endpoint sp = new Endpoint("https://query.wikidata.org/sparql", false);
 
@@ -476,90 +476,10 @@ public class GameActivity extends AppCompatActivity {
 
       HashMap rs = sp.query(querySelect);
       printResult(rs, 30);
-
-    } catch (EndpointException eex) {
-      Log.d(TAG, "getWikidataInfo: eex = " + eex);
+    } catch (EndpointException endpointException) {
+      Log.d(TAG, "getWikidataInfo: eex = " + endpointException);
     }
-
-    /*WikibaseDataFetcher wbdf = WikibaseDataFetcher.getWikidataDataFetcher();
-
-    System.out.println("*** Fetching data for one entity:");
-
-    EntityDocument q42 = null;
-    try {
-      q42 = wbdf.getEntityDocument("Q42");
-    } catch (Exception exception) {
-      Log.d(TAG, "getWikidataInfo: " + exception);
-    }
-
-    if (q42 instanceof ItemDocument) {
-      System.out.println("The English name for entity Q42 is "
-        + ((ItemDocument) q42).getLabels().get("en").getText());
-    }
-
-
-    Map<String, EntityDocument> results = null;
-    try {
-      results = wbdf.getEntityDocuments("Q80", "P31");
-    } catch (Exception exception) {
-      Log.d(TAG, "getWikidataInfo: " + exception);
-    }
-    // Keys of this map are Qids, but we only use the values here:
-    for (EntityDocument ed : results.values()) {
-      System.out.println("Successfully retrieved data for "
-        + ed.getEntityId().getId());
-    }
-
-    System.out
-      .println("*** Fetching data using filters to reduce data volume:");
-    // Only site links from English Wikipedia:
-    wbdf.getFilter().setSiteLinkFilter(Collections.singleton("enwiki"));
-    // Only labels in French:
-    wbdf.getFilter().setLanguageFilter(Collections.singleton("fr"));
-    // No statements at all:
-    wbdf.getFilter().setPropertyFilter(
-      Collections.<PropertyIdValue>emptySet());
-
-    EntityDocument q8 = null;
-
-    try {
-      q8 = wbdf.getEntityDocument("Q8");
-    } catch (Exception exception) {
-      Log.d(TAG, "getWikidataInfo: " + exception);
-    }
-    if (q8 instanceof ItemDocument) {
-      System.out.println("The French label for entity Q8 is "
-        + ((ItemDocument) q8).getLabels().get("fr").getText()
-        + "\nand its English Wikipedia page has the title "
-        + ((ItemDocument) q8).getSiteLinks().get("enwiki")
-        .getPageTitle() + ".");
-    }
-
-    System.out.println("*** Fetching data based on page title:");
-    try {
-      EntityDocument edPratchett = wbdf.getEntityDocumentByTitle("enwiki", "Terry Pratchett");
-    } catch (Exception exception) {
-      Log.d(TAG, "getWikidataInfo: " + exception);
-    }
-
-    System.out.println("*** Fetching data based on several page titles:");
-    try {
-      results = wbdf.getEntityDocumentsByTitle("enwiki", "Wikidata", "Wikipedia");
-    } catch (Exception exception) {
-      Log.d(TAG, "getWikidataInfo: " + exception);
-    }
-    // In this case, keys are titles rather than Qids
-    for (Map.Entry<String, EntityDocument> entry : results.entrySet()) {
-      System.out
-        .println("Successfully retrieved data for page entitled \""
-          + entry.getKey() + "\": "
-          + entry.getValue().getEntityId().getId());
-    }
-
-    System.out.println("*** Done.");
-*/
   }
-
 
   @OnClick(R.id.check_answer_fab)
   public void checkAnswer(View view) {
