@@ -30,6 +30,7 @@ import com.mapbox.services.commons.geojson.Feature;
 import com.mapbox.tappergeochallenge.Endpoint;
 import com.mapbox.tappergeochallenge.EndpointException;
 import com.mapbox.tappergeochallenge.R;
+import com.mapbox.tappergeochallenge.WikidataRetrofitService;
 import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 
@@ -41,6 +42,12 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
@@ -98,9 +105,76 @@ public class GameActivity extends AppCompatActivity {
     // Bind views via a third-party library named Butterknife
     ButterKnife.bind(this);
 
-    getWikidataInfo();
+//    getWikidataInfo();
 
-    setOneOrTwoPlayerGame();
+
+    HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+    interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+    OkHttpClient client = new OkHttpClient.Builder()
+      .addInterceptor(interceptor)
+      .build();
+
+
+    Retrofit retrofit = new Retrofit.Builder()
+      .baseUrl("https://query.wikidata.org/")
+      .client(client)
+      .addConverterFactory(ScalarsConverterFactory.create())
+      .build();
+
+
+    WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
+
+    Call<String> call = wikidataRetrofitService.getQuery("SELECT%20%3Fcity%20%3FcityLabel%20(SAMPLE(%3Flocation)%20AS%20%3Flocation)%20(MAX(%3Fpopulation)%20AS%20%3Fpopulation)%20(SAMPLE(%3Flayer)%20AS%20%3Flayer)%0AWHERE%0A%7B%0A%20%20%3Fcity%20wdt%3AP31%2Fwdt%3AP279*%20wd%3AQ515%3B%0A%20%20%20%20%20%20%20%20wdt%3AP625%20%3Flocation%3B%0A%20%20%20%20%20%20%20%20wdt%3AP1082%20%3Fpopulation.%0A%20%20FILTER(%3Fpopulation%20%3E%3D%20500000).%0A%20%20BIND(%0A%20%20%20%20IF(%3Fpopulation%20%3C%201000000%2C%20%22%3C1M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%202000000%2C%20%221M-2M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%205000000%2C%20%222M-5M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2010000000%2C%20%225M-10M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2020000000%2C%20%2210M-20M%22%2C%0A%20%20%20%20%22%3E20M%22)))))%0A%20%20%20%20AS%20%3Flayer).%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%0A%7D%0AGROUP%20BY%20%3Fcity%20%3FcityLabel");
+
+    call.enqueue(new Callback<String>() {
+      @Override
+      public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+        Log.d(TAG, "onResponse: response.body() = " + response.body());
+      }
+
+      @Override
+      public void onFailure(Call<String> call, Throwable t) {
+        Log.d(TAG, "onFailure: ");
+      }
+    });
+    /*int statusCode;
+
+    try {
+
+      try {
+
+        try {
+          Log.d(TAG, "sendQueryGET: response.body() = " + response.body());
+
+          statusCode = response.code();
+
+          if (statusCode < 200 || statusCode >= 300) {
+            throw new EndpointException(this, String.valueOf(response.code()));
+          }
+
+//          HttpEntity entity = response.getEntity();
+
+
+          System.out.println("----------------------------------------");
+          System.out.println(response.body());
+          _response = response.body().string();
+
+//          EntityUtils.consume(entity);
+
+
+        } finally {
+          response.close();
+        }
+      } finally {
+//        client.close();
+      }
+    } catch (Exception exception) {
+      Log.d(TAG, "sendQueryGET: exception = " + exception);
+      exception.printStackTrace();
+    }*/
+
+
+   /* setOneOrTwoPlayerGame();
     playerOne = new Player();
     playerTwo = new Player();
 
@@ -116,17 +190,17 @@ public class GameActivity extends AppCompatActivity {
     checkAnswerFab.hide();
 
     getAndDisplayLocationToGuess();
-
+*/
     mapView.onCreate(savedInstanceState);
     mapView.getMapAsync(new OnMapReadyCallback() {
       @Override
       public void onMapReady(final MapboxMap mapboxMap) {
-        GameActivity.this.mapboxMap = mapboxMap;
+        /*GameActivity.this.mapboxMap = mapboxMap;
         setUpMapClickListener();
         setUpInfoWindowClick();
         setUpMarkerClick();
         adjustLogoOpacity();
-        adjustAttributionOpacity();
+        adjustAttributionOpacity();*/
       }
     });
   }

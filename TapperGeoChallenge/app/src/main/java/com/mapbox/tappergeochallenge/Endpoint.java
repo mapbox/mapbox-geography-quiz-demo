@@ -1,55 +1,14 @@
 package com.mapbox.tappergeochallenge;
 
-/*
- * The MIT License
- *
- * Copyright 2016 Karima Rafes.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 import android.util.Log;
-
-import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -60,12 +19,26 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
- * @author Karima Rafes.
  */
 
 
@@ -166,6 +139,8 @@ public class Endpoint {
   private SAXParser _parser;
   private DefaultHandler _handler;
   private String _response;
+
+  private String TAG = "Endpoint class";
 
   public Endpoint(
     String endpoint
@@ -329,11 +304,14 @@ public class Endpoint {
 
     if (_MethodHTTPRead.equalsIgnoreCase("POST")) {
       if (_login != null && _password != null) {
+        Log.d(TAG, "query: sendQueryPOSTwithAuth");
         return sendQueryPOSTwithAuth(_endpoint, param, query, _login, _password);
       } else {
+        Log.d(TAG, "query: sendQueryPOST");
         return sendQueryPOST(_endpoint, param, query);
       }
     } else {
+      Log.d(TAG, "query: sendQueryGET");
       return sendQueryGET(_endpoint, param, query);
     }
   }
@@ -343,6 +321,9 @@ public class Endpoint {
     _handler = new ParserSPARQLResultHandler();
 
     try {
+
+      Log.d(TAG, "getResult: _response = " + _response);
+
       _parser.parse(new InputSource(new StringReader(_response)), _handler);
     } catch (SAXException e) {
       System.out.println(e.getMessage());
@@ -380,58 +361,76 @@ public class Endpoint {
   }
 
 
+
+
   private HashMap<String, HashMap> sendQueryGET(String urlStr, String parameter, String query)
     throws EndpointException {
 
-    int statusCode = 0;
+
+    HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+    interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+    OkHttpClient client = new OkHttpClient.Builder()
+      .addInterceptor(interceptor)
+      .build();
+
+
+    Retrofit retrofit = new Retrofit.Builder()
+      .baseUrl("https://query.wikidata.org/")
+      .client(client)
+      .addConverterFactory(ScalarsConverterFactory.create())
+      .build();
+
+
+    WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
+
+    Call<String> call = wikidataRetrofitService.getQuery("SELECT%20%3Fcity%20%3FcityLabel%20(SAMPLE(%3Flocation)%20AS%20%3Flocation)%20(MAX(%3Fpopulation)%20AS%20%3Fpopulation)%20(SAMPLE(%3Flayer)%20AS%20%3Flayer)%0AWHERE%0A%7B%0A%20%20%3Fcity%20wdt%3AP31%2Fwdt%3AP279*%20wd%3AQ515%3B%0A%20%20%20%20%20%20%20%20wdt%3AP625%20%3Flocation%3B%0A%20%20%20%20%20%20%20%20wdt%3AP1082%20%3Fpopulation.%0A%20%20FILTER(%3Fpopulation%20%3E%3D%20500000).%0A%20%20BIND(%0A%20%20%20%20IF(%3Fpopulation%20%3C%201000000%2C%20%22%3C1M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%202000000%2C%20%221M-2M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%205000000%2C%20%222M-5M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2010000000%2C%20%225M-10M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2020000000%2C%20%2210M-20M%22%2C%0A%20%20%20%20%22%3E20M%22)))))%0A%20%20%20%20AS%20%3Flayer).%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%0A%7D%0AGROUP%20BY%20%3Fcity%20%3FcityLabel");
+
+    call.enqueue(new Callback<String>() {
+      @Override
+      public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+        Log.d(TAG, "onResponse: response.body() = " + response.body());
+      }
+
+      @Override
+      public void onFailure(Call<String> call, Throwable t) {
+        Log.d(TAG, "onFailure: ");
+      }
+    });
+    /*int statusCode;
+
     try {
-
-      String url = urlStr + "?" + parameter + "=" + URLEncoder.encode(query, "UTF-8");
-
-      OkHttpClient client = new OkHttpClient();
 
       try {
 
-        Request request = new Request.Builder()
-          .url(url)
-          .build();
-
-
-        //System.out.println("Executing request " + request
-        Response response = client.newCall(request).execute();
-
-
         try {
+          Log.d(TAG, "sendQueryGET: response.body() = " + response.body());
 
-          response.body().string();
-          Log.d("Endpoint", "sendQueryGET: response.body().string();\n = " + response.body().string());
+          statusCode = response.code();
 
-
-         /* statusCode = response.getStatusLine().getStatusCode();
           if (statusCode < 200 || statusCode >= 300) {
-            throw new EndpointException(this, response.getStatusLine().toString());
-
+            throw new EndpointException(this, String.valueOf(response.code()));
           }
 
-          HttpEntity entity = response.getEntity();*/
+//          HttpEntity entity = response.getEntity();
 
-          //System.out.println("----------------------------------------");
-          //System.out.println(response.getStatusLine());
-//          _response = EntityUtils.toString(entity);
-          //EntityUtils.consume(entity);
 
+          System.out.println("----------------------------------------");
+          System.out.println(response.body());
+          _response = response.body().string();
+
+//          EntityUtils.consume(entity);
 
 
         } finally {
           response.close();
         }
       } finally {
-        /*httpclient.close();*/
+//        client.close();
       }
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-      e.printStackTrace();
-    }
+    } catch (Exception exception) {
+      Log.d(TAG, "sendQueryGET: exception = " + exception);
+      exception.printStackTrace();
+    }*/
     return getResult();
   }
 
