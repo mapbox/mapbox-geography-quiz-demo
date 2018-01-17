@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -26,28 +27,25 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.commons.geojson.Feature;
+import com.mapbox.tappergeochallenge.Endpoint;
+import com.mapbox.tappergeochallenge.EndpointException;
 import com.mapbox.tappergeochallenge.R;
-import com.mapbox.tappergeochallenge.WikidataRetrofitService;
 import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import timber.log.Timber;
 
+import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME;
-import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME;
 import static com.mapbox.tappergeochallenge.StringConstants.TWO_PLAYER_GAME;
-import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
+import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME;
 
 
 public class GameActivity extends AppCompatActivity {
@@ -83,7 +81,6 @@ public class GameActivity extends AppCompatActivity {
   private boolean playerTwoHasGuessed;
   private Intent intent;
   private retrofit2.Call<Feature[]> request;
-
 
 
   @Override
@@ -136,13 +133,13 @@ public class GameActivity extends AppCompatActivity {
   private void adjustLogoOpacity() {
     int MAPBOX_LOGO_OPACITY = 70;
     ImageView logo = mapView.findViewById(R.id.logoView);
-    logo.setImageAlpha(MAPBOX_LOGO_OPACITY);
+    logo.setAlpha(MAPBOX_LOGO_OPACITY);
   }
 
   private void adjustAttributionOpacity() {
     int ATTRIBUTION_OPACITY = 70;
     ImageView attribution = mapView.findViewById(R.id.attributionView);
-    attribution.setImageAlpha(ATTRIBUTION_OPACITY);
+    attribution.setAlpha(ATTRIBUTION_OPACITY);
   }
 
   private void setGameCardviewInfo() {
@@ -431,26 +428,136 @@ public class GameActivity extends AppCompatActivity {
     view.setText(getResources().getString(stringId, playerName, numOfPoints));
   }
 
+  public static void printResult(HashMap rs, int size) {
+
+
+//    for (String variable : (ArrayList) rs.get("result").get("variables")) {
+    System.out.print(String.format("%-" + size + "." + size + "s", rs.get("result").toString()) + " | ");
+    /*}
+    System.out.print("\n");
+    for (HashMap value : (ArrayList) rs.get("result").get("rows")) {
+      //System.out.print(value);
+         for (String key : value.keySet()) {
+         System.out.println(value.get(key));
+         }
+      for (String variable : (ArrayList) rs.get("result"). ("variables")){
+        //System.out.println(value.get(variable));
+        System.out.print(String.format("%-" + size + "." + size + "s", value.get(variable)) + " | ");
+      }
+      System.out.print("\n");
+    }*/
+  }
+
   private void getWikidataInfo() {
 
-    Retrofit retrofit = new Retrofit.Builder()
-      .baseUrl(WIKIDATA_API_BASE_URL)
-      .addConverterFactory(GsonConverterFactory.create())
-      .build();
+    try {
+      Endpoint sp = new Endpoint("https://query.wikidata.org/sparql", false);
 
-    WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
-    request = wikidataRetrofitService.getCities("", "");
+      String querySelect = "#Big cities, grouped into map layers by population\n" +
+        "#defaultView:Map\n" +
+        "SELECT DISTINCT ?city ?cityLabel (SAMPLE(?location) AS ?location) (MAX(?population) AS ?population) (SAMPLE(?layer) AS ?layer)\n" +
+        "WHERE\n" +
+        "{\n" +
+        "  ?city wdt:P31/wdt:P279* wd:Q515;\n" +
+        "        wdt:P625 ?location;\n" +
+        "        wdt:P1082 ?population.\n" +
+        "  FILTER(?population >= 500000).\n" +
+        "  BIND(\n" +
+        "    IF(?population < 1000000, \"<1M\",\n" +
+        "    IF(?population < 2000000, \"1M-2M\",\n" +
+        "    IF(?population < 5000000, \"2M-5M\",\n" +
+        "    IF(?population < 10000000, \"5M-10M\",\n" +
+        "    IF(?population < 20000000, \"10M-20M\",\n" +
+        "    \">20M\")))))\n" +
+        "    AS ?layer).\n" +
+        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }\n" +
+        "}\n" +
+        "GROUP BY ?city ?cityLabel";
 
-    request.enqueue(new retrofit2.Callback<Feature[]>() {
-      @Override
-      public void onResponse(retrofit2.Call<Feature[]> call, retrofit2.Response<Feature[]> response) {
-      }
+      HashMap rs = sp.query(querySelect);
+      printResult(rs, 30);
 
-      @Override
-      public void onFailure(retrofit2.Call<Feature[]> call, Throwable throwable) {
+    } catch (EndpointException eex) {
+      Log.d(TAG, "getWikidataInfo: eex = " + eex);
+    }
 
-      }
-    });
+    /*WikibaseDataFetcher wbdf = WikibaseDataFetcher.getWikidataDataFetcher();
+
+    System.out.println("*** Fetching data for one entity:");
+
+    EntityDocument q42 = null;
+    try {
+      q42 = wbdf.getEntityDocument("Q42");
+    } catch (Exception exception) {
+      Log.d(TAG, "getWikidataInfo: " + exception);
+    }
+
+    if (q42 instanceof ItemDocument) {
+      System.out.println("The English name for entity Q42 is "
+        + ((ItemDocument) q42).getLabels().get("en").getText());
+    }
+
+
+    Map<String, EntityDocument> results = null;
+    try {
+      results = wbdf.getEntityDocuments("Q80", "P31");
+    } catch (Exception exception) {
+      Log.d(TAG, "getWikidataInfo: " + exception);
+    }
+    // Keys of this map are Qids, but we only use the values here:
+    for (EntityDocument ed : results.values()) {
+      System.out.println("Successfully retrieved data for "
+        + ed.getEntityId().getId());
+    }
+
+    System.out
+      .println("*** Fetching data using filters to reduce data volume:");
+    // Only site links from English Wikipedia:
+    wbdf.getFilter().setSiteLinkFilter(Collections.singleton("enwiki"));
+    // Only labels in French:
+    wbdf.getFilter().setLanguageFilter(Collections.singleton("fr"));
+    // No statements at all:
+    wbdf.getFilter().setPropertyFilter(
+      Collections.<PropertyIdValue>emptySet());
+
+    EntityDocument q8 = null;
+
+    try {
+      q8 = wbdf.getEntityDocument("Q8");
+    } catch (Exception exception) {
+      Log.d(TAG, "getWikidataInfo: " + exception);
+    }
+    if (q8 instanceof ItemDocument) {
+      System.out.println("The French label for entity Q8 is "
+        + ((ItemDocument) q8).getLabels().get("fr").getText()
+        + "\nand its English Wikipedia page has the title "
+        + ((ItemDocument) q8).getSiteLinks().get("enwiki")
+        .getPageTitle() + ".");
+    }
+
+    System.out.println("*** Fetching data based on page title:");
+    try {
+      EntityDocument edPratchett = wbdf.getEntityDocumentByTitle("enwiki", "Terry Pratchett");
+    } catch (Exception exception) {
+      Log.d(TAG, "getWikidataInfo: " + exception);
+    }
+
+    System.out.println("*** Fetching data based on several page titles:");
+    try {
+      results = wbdf.getEntityDocumentsByTitle("enwiki", "Wikidata", "Wikipedia");
+    } catch (Exception exception) {
+      Log.d(TAG, "getWikidataInfo: " + exception);
+    }
+    // In this case, keys are titles rather than Qids
+    for (Map.Entry<String, EntityDocument> entry : results.entrySet()) {
+      System.out
+        .println("Successfully retrieved data for page entitled \""
+          + entry.getKey() + "\": "
+          + entry.getValue().getEntityId().getId());
+    }
+
+    System.out.println("*** Done.");
+*/
   }
 
 
