@@ -7,6 +7,6 @@ import retrofit2.http.Query;
 public interface WikidataRetrofitService {
 
   @GET("/sparql")
-  Call<String> getQuery(@Query("query") String query);
+  Call<String> getRetrofitQuery(@Query("query") String query);
 
 }
