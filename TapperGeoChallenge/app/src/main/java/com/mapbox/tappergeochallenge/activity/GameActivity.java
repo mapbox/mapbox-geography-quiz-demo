@@ -30,7 +30,6 @@ import com.mapbox.services.commons.geojson.Feature;
 import com.mapbox.tappergeochallenge.Endpoint;
 import com.mapbox.tappergeochallenge.EndpointException;
 import com.mapbox.tappergeochallenge.R;
-import com.mapbox.tappergeochallenge.WikidataRetrofitService;
 import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 
@@ -42,12 +41,6 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Retrofit;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
 import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
@@ -105,26 +98,19 @@ public class GameActivity extends AppCompatActivity {
     // Bind views via a third-party library named Butterknife
     ButterKnife.bind(this);
 
-//    getWikidataInfo();
-
-
-    HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+ /*   HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
     interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
     OkHttpClient client = new OkHttpClient.Builder()
       .addInterceptor(interceptor)
       .build();
 
-
-    Retrofit retrofit = new Retrofit.Builder()
-      .baseUrl("https://query.wikidata.org/")
+    Call<String> call = new Retrofit.Builder()
+      .baseUrl("http://tinyurl.com/")
       .client(client)
       .addConverterFactory(ScalarsConverterFactory.create())
-      .build();
-
-
-    WikidataRetrofitService wikidataRetrofitService = retrofit.create(WikidataRetrofitService.class);
-
-    Call<String> call = wikidataRetrofitService.getRetrofitQuery("%23Big%20cities%2C%20grouped%20into%20map%20layers%20by%20population%0A%23defaultView%3ATable%0ASELECT%20DISTINCT%20%3Fcity%20%3FcityLabel%20(SAMPLE(%3Flocation)%20AS%20%3Flocation)%20(MAX(%3Fpopulation)%20AS%20%3Fpopulation)%20(SAMPLE(%3Flayer)%20AS%20%3Flayer)%0AWHERE%0A%7B%0A%20%20%3Fcity%20wdt%3AP31%2Fwdt%3AP279*%20wd%3AQ515%3B%0A%20%20%20%20%20%20%20%20wdt%3AP625%20%3Flocation%3B%0A%20%20%20%20%20%20%20%20wdt%3AP1082%20%3Fpopulation.%0A%20%20FILTER(%3Fpopulation%20%3E%3D%20500000).%0A%20%20BIND(%0A%20%20%20%20IF(%3Fpopulation%20%3C%201000000%2C%20%22%3C1M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%202000000%2C%20%221M-2M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%205000000%2C%20%222M-5M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2010000000%2C%20%225M-10M%22%2C%0A%20%20%20%20IF(%3Fpopulation%20%3C%2020000000%2C%20%2210M-20M%22%2C%0A%20%20%20%20%22%3E20M%22)))))%0A%20%20%20%20AS%20%3Flayer).%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%0A%7D%0AGROUP%20BY%20%3Fcity%20%3FcityLabel");
+      .build()
+      .create(WikidataRetrofitService.class)
+      .getRetrofitQuery();
 
     call.enqueue(new Callback<String>() {
       @Override
@@ -137,41 +123,13 @@ public class GameActivity extends AppCompatActivity {
         Log.d(TAG, "onFailure: ");
       }
     });
-    /*int statusCode;
 
-    try {
-
-      try {
-
-        try {
-          Log.d(TAG, "sendQueryGET: response.body() = " + response.body());
-
-          statusCode = response.code();
-
-          if (statusCode < 200 || statusCode >= 300) {
-            throw new EndpointException(this, String.valueOf(response.code()));
-          }
-
-//          HttpEntity entity = response.getEntity();
+*/
 
 
-          System.out.println("----------------------------------------");
-          System.out.println(response.body());
-          _response = response.body().string();
-
-//          EntityUtils.consume(entity);
+    makeWikidataCall();
 
 
-        } finally {
-          response.close();
-        }
-      } finally {
-//        client.close();
-      }
-    } catch (Exception exception) {
-      Log.d(TAG, "sendQueryGET: exception = " + exception);
-      exception.printStackTrace();
-    }*/
 
 
    /* setOneOrTwoPlayerGame();
@@ -203,6 +161,39 @@ public class GameActivity extends AppCompatActivity {
         adjustAttributionOpacity();*/
       }
     });
+  }
+
+  private void makeWikidataCall() {
+    try {
+      Endpoint sp = new Endpoint("https://query.wikidata.org/sparql", false);
+
+      String querySelect = "#Big cities, grouped into map layers by population\n" +
+        "#defaultView:Map\n" +
+        "SELECT DISTINCT ?city ?cityLabel (SAMPLE(?location) AS ?location) (MAX(?population) AS ?population) (SAMPLE(?layer) AS ?layer)\n" +
+        "WHERE\n" +
+        "{\n" +
+        "  ?city wdt:P31/wdt:P279* wd:Q515;\n" +
+        "        wdt:P625 ?location;\n" +
+        "        wdt:P1082 ?population.\n" +
+        "  FILTER(?population >= 500000).\n" +
+        "  BIND(\n" +
+        "    IF(?population < 1000000, \"<1M\",\n" +
+        "    IF(?population < 2000000, \"1M-2M\",\n" +
+        "    IF(?population < 5000000, \"2M-5M\",\n" +
+        "    IF(?population < 10000000, \"5M-10M\",\n" +
+        "    IF(?population < 20000000, \"10M-20M\",\n" +
+        "    \">20M\")))))\n" +
+        "    AS ?layer).\n" +
+        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }\n" +
+        "}\n" +
+        "GROUP BY ?city ?cityLabel";
+
+      HashMap rs = sp.query(querySelect);
+      printResult(rs, 30);
+
+    } catch (EndpointException eex) {
+      eex.printStackTrace();
+    }
   }
 
   private void adjustLogoOpacity() {
@@ -507,51 +498,19 @@ public class GameActivity extends AppCompatActivity {
   public static void printResult(HashMap<String, HashMap> rs, int size) {
 
     for (String variable : (ArrayList<String>) rs.get("result").get("variables")) {
-      System.out.print(String.format("%-" + size + "." + size + "s", variable) + " | ");
+      Log.d("GameActivity", String.format("%-" + size + "." + size + "s", variable) + " | ");
     }
-    System.out.print("\n");
+    Log.d("GameActivity", "\n");
     for (HashMap<String, Object> value : (ArrayList<HashMap<String, Object>>) rs.get("result").get("rows")) {
-      //System.out.print(value);
+      //Log.d("GameActivity",value);
         /* for (String key : value.keySet()) {
-         System.out.println(value.get(key));
+         Log.dl"GameActivity",n(value.get(key));
          }*/
       for (String variable : (ArrayList<String>) rs.get("result").get("variables")) {
-        //System.out.println(value.get(variable));
-        System.out.print(String.format("%-" + size + "." + size + "s", value.get(variable)) + " | ");
+        //Log.dl"GameActivity",n(value.get(variable));
+        Log.d("GameActivity", String.format("%-" + size + "." + size + "s", value.get(variable)) + " | ");
       }
-      System.out.print("\n");
-    }
-  }
-
-  private void getWikidataInfo() {
-    try {
-      Endpoint sp = new Endpoint("https://query.wikidata.org/sparql", false);
-
-      String querySelect = "#Big cities, grouped into map layers by population\n" +
-        "#defaultView:Map\n" +
-        "SELECT DISTINCT ?city ?cityLabel (SAMPLE(?location) AS ?location) (MAX(?population) AS ?population) (SAMPLE(?layer) AS ?layer)\n" +
-        "WHERE\n" +
-        "{\n" +
-        "  ?city wdt:P31/wdt:P279* wd:Q515;\n" +
-        "        wdt:P625 ?location;\n" +
-        "        wdt:P1082 ?population.\n" +
-        "  FILTER(?population >= 500000).\n" +
-        "  BIND(\n" +
-        "    IF(?population < 1000000, \"<1M\",\n" +
-        "    IF(?population < 2000000, \"1M-2M\",\n" +
-        "    IF(?population < 5000000, \"2M-5M\",\n" +
-        "    IF(?population < 10000000, \"5M-10M\",\n" +
-        "    IF(?population < 20000000, \"10M-20M\",\n" +
-        "    \">20M\")))))\n" +
-        "    AS ?layer).\n" +
-        "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }\n" +
-        "}\n" +
-        "GROUP BY ?city ?cityLabel";
-
-      HashMap rs = sp.query(querySelect);
-      printResult(rs, 30);
-    } catch (EndpointException endpointException) {
-      Log.d(TAG, "getWikidataInfo: eex = " + endpointException);
+      Log.d("GameActivity", "\n");
     }
   }
 

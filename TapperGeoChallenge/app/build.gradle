@@ -60,11 +60,13 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
-    compile 'com.squareup.okhttp3:okhttp:3.9.1'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
     compile 'com.squareup.retrofit2:converter-scalars:2.1.0'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
 
+    compile 'com.squareup.okhttp3:logging-interceptor:3.9.1'
 
+//    compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
+
+    // SPARQL Java library's jar files
     implementation files('libs/httpclient-4.5.3.jar')
 }
