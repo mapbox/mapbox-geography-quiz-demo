@@ -10,9 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.tappergeochallenge.R;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -23,7 +25,7 @@ import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME;
 import static com.mapbox.tappergeochallenge.StringConstants.TWO_PLAYER_GAME;
 import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME;
 
-public class GameSelectActivity extends AppCompatActivity {
+public class MainMenuActivity extends AppCompatActivity {
 
   private String TAG = "MainActivity";
 
@@ -32,11 +34,11 @@ public class GameSelectActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main_menu);
     ButterKnife.bind(this);
-    /*try {
+    try {
       loadCities();
     } catch (IOException ex) {
       Log.d(TAG, "onCreate: " + ex);
-    }*/
+    }
   }
 
   @OnClick(R.id.single_player_game_button)
@@ -76,11 +78,11 @@ public class GameSelectActivity extends AppCompatActivity {
     nameDialog.show();
   }
 
-  /*private void loadCities() throws IOException {
+  private void loadCities() throws IOException {
     try {
       // Use fromJson() method to convert GeoJSON file into a usable FeatureCollection
       FeatureCollection featureCollection = FeatureCollection.fromJson(loadGeoJsonFromAsset("cities.geojson"));
-      GameActivity.listOfCities = featureCollection.getFeatures();
+      GameActivity.listOfCities = featureCollection.features();
     } catch (Exception exception) {
       Log.e(TAG, "getFeatureCollectionFromJson: " + exception);
     }
@@ -100,5 +102,5 @@ public class GameSelectActivity extends AppCompatActivity {
       exception.printStackTrace();
       return null;
     }
-  }*/
+  }
 }

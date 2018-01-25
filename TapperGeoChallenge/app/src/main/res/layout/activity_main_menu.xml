@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools"
-                                             android:id="@+id/activity_main_menu"
-                                             android:layout_width="match_parent"
-                                             android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
 
-                                             android:orientation="vertical"
-                                             tools:context=".activity.GameSelectActivity">
+    android:orientation="vertical"
+    tools:context=".activity.MainMenuActivity">
 
 
     <TextView
@@ -22,7 +22,7 @@
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.v7.widget.CardView
         android:id="@+id/single_player_game_button"
@@ -39,15 +39,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline">
 
-        <TextView
-            android:id="@+id/single_player_game_textview"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_height="match_parent"
             android:gravity="center_horizontal"
-            android:text="@string/single_player_game"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/single_player_game_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/single_player_game"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:id="@+id/single_player_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_gravity="center_vertical"
+
+                android:src="@drawable/ic_single_person_white_24dp" />
+
+        </LinearLayout>
 
     </android.support.v7.widget.CardView>
 
@@ -66,15 +83,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/single_player_game_button">
 
-        <TextView
-            android:id="@+id/two_player_game_textview"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_height="match_parent"
             android:gravity="center_horizontal"
-            android:text="@string/two_player_game"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/two_player_game_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/two_player_game"
+                android:layout_gravity="center_vertical"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:id="@+id/two_player_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="16dp"
+                android:src="@drawable/ic_two_people_white_24dp" />
+
+        </LinearLayout>
 
     </android.support.v7.widget.CardView>
 
@@ -83,7 +115,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".40"/>
+        app:layout_constraintGuide_percent=".40" />
 
 
 </android.support.constraint.ConstraintLayout>
