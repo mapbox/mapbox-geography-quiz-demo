@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
@@ -33,6 +34,8 @@ import com.mapbox.tappergeochallenge.model.City;
 import com.mapbox.tappergeochallenge.model.Player;
 import com.mapbox.turf.TurfMeasurement;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Random;
 
@@ -62,9 +65,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   @BindView(R.id.player_two_points)
   TextView playerTwoPointsTextView;
 
-  private static int CAMERA_BOUNDS_PADDING = 220;
+  private static int CAMERA_BOUNDS_PADDING = 170;
   private static int EASE_CAMERA_SPEED_IN_MS = 1500;
-  private String TAG = "GameActivity";
   private MapboxMap mapboxMap;
   private Icon playerOneIcon;
   private Icon playerTwoIcon;
@@ -79,35 +81,53 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   private boolean playerOneHasGuessed;
   private boolean playerTwoHasGuessed;
   private Intent intent;
+  private String TAG = "GameActivity";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
+    try {
+      loadCities();
+    } catch (IOException exception) {
+      Log.d("GameActivity", "onCreate: " + exception);
+    }
     // Mapbox access token is configured here. This needs to be called either in your application
     // object or in the same activity which contains the mapview.
+    // TODO: Make sure that you paste your Mapbox token into this project's strings.xml file!
     Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
 
     // This contains the MapView in XML and needs to be called after the access token is configured.
     setContentView(R.layout.game_activity_layout);
 
-    // Bind views via a third-party library named Butterknife
+    // Bind views via the third-party Butterknife library
     ButterKnife.bind(this);
     intent = getIntent();
+
+    // Determine whether a one or two person game was selected in the previous activity/screen
     setOneOrTwoPlayerGame(intent);
+
+
+    // Miscellaneous setup
+    checkAnswerFab.hide();
     playerOne = new Player();
     playerTwo = new Player();
     playerOneHasGuessed = false;
     playerTwoHasGuessed = false;
+
+    // Set the visibility of parts of the cardview that's on top of the Mapbox map
     if (isSinglePlayerGame) {
       playerOnePointsTextView.setVisibility(View.GONE);
       playerTwoPointsTextView.setVisibility(View.GONE);
     } else if (isTwoPlayerGame) {
-      setGameCardviewInfo();
+      displayPlayerNamesAndPoints();
     }
+
+    // Set up player and target city icons
     initializeIcons();
-    checkAnswerFab.hide();
+
+    // Retrieve the first city to guess
     getAndDisplayLocationToGuess();
+
     mapView.onCreate(savedInstanceState);
     mapView.getMapAsync(this);
   }
@@ -131,7 +151,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         playerOneIcon);
     }
 
-    // Prevents single player from changing guessed location
     if (isSinglePlayerGame && playerOneHasGuessed) {
       Snackbar.make(findViewById(android.R.id.content),
         R.string.player_one_already_chose_snackbar_message,
@@ -166,32 +185,31 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
   @Override
   public boolean onInfoWindowClick(@NonNull Marker marker) {
-    Log.d(TAG, "onInfoWindowClick: ");
     Icon iconOfSelectedMarker = marker.getIcon();
     if (isSinglePlayerGame && !playerOneHasGuessed) {
+      Log.d(TAG, "onInfoWindowClick: 1 ");
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
       checkAnswerFab.setImageResource(R.drawable.ic_done_white);
       checkAnswerFab.show();
-    }
-
-    if (isPlayerOneTurn(iconOfSelectedMarker)) {
+    } else if (isTwoPlayerGame && !playerOneHasGuessed && iconOfSelectedMarker == playerOneIcon) {
+      Log.d(TAG, "onInfoWindowClick: 2 ");
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
-    }
-
-    if (isPlayerTwoTurn(iconOfSelectedMarker)) {
+    } else if (isTwoPlayerGame && playerOneHasGuessed && iconOfSelectedMarker == playerTwoIcon) {
+      Log.d(TAG, "onInfoWindowClick: 3 ");
       playerTwoHasGuessed = true;
       playerTwo.setSelectedLatitude(marker.getPosition().getLatitude());
       playerTwo.setSelectedLongitude(marker.getPosition().getLongitude());
+      addTargetCityBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
+        randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
+      setCameraBoundsToSelectedAndTargetMarkers(marker);
       checkAnswerFab.setImageResource(R.drawable.ic_done_all_white);
       checkAnswerFab.show();
     }
-    moveCameraToSelectedMarker(marker,isSinglePlayerGame);
-    addBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
-      randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
+
     return false;
   }
 
@@ -220,22 +238,22 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     attribution.setAlpha(ATTRIBUTION_OPACITY);
   }
 
-  private void setGameCardviewInfo() {
+  private void displayPlayerNamesAndPoints() {
     playerOne.setPlayerName(intent.getStringExtra(PLAYER_ONE_NAME));
     playerTwo.setPlayerName(intent.getStringExtra(PLAYER_TWO_NAME));
     displayPlayersPoints();
   }
 
-  private void moveCameraToSelectedMarker(Marker marker, boolean singlePlayerGame) {
+  private void setCameraBoundsToSelectedAndTargetMarkers(Marker marker) {
     LatLngBounds latLngBounds = null;
     if (marker != null) {
-      if (singlePlayerGame) {
+      if (isSinglePlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
           .include(marker.getPosition())
           .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
           .build();
       }
-      if (singlePlayerGame) {
+      if (isTwoPlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
           .include(marker.getPosition())
           .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
@@ -267,8 +285,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     String typeOfGame = intent.getStringExtra(TYPE_OF_GAME);
     isSinglePlayerGame = typeOfGame.equals(ONE_PLAYER_GAME);
     isTwoPlayerGame = typeOfGame.equals(TWO_PLAYER_GAME);
-    Log.d(TAG, "setOneOrTwoPlayerGame: isSinglePlayerGame == " + isSinglePlayerGame);
-    Log.d(TAG, "setOneOrTwoPlayerGame: isTwoPlayerGame == " + isTwoPlayerGame);
   }
 
   private void getAndDisplayLocationToGuess() {
@@ -286,6 +302,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     locationToGuess.setText(getResources().getString(R.string.location_to_guess, randomTargetCity.getCityName()));
   }
 
+  // Uses Mapbox's Turf library
   private double checkDistanceBetweenTargetAndGuess(Player playerToCheck) {
     Point randomPoint = Point.fromLngLat(randomCityLocation.getLongitude(),
       randomCityLocation.getLatitude());
@@ -294,7 +311,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     return TurfMeasurement.distance(randomPoint, selectedPoint);
   }
 
-  private void addBullsEyeMarkerToMap(LatLng location, String title, Icon chosenIcon) {
+  private void addTargetCityBullsEyeMarkerToMap(LatLng location, String title, Icon chosenIcon) {
     mapboxMap.addMarker(new MarkerOptions()
       .position(location)
       .title(title)
@@ -367,7 +384,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   @OnClick(R.id.check_answer_fab)
   public void checkAnswer(View view) {
     if (isSinglePlayerGame) {
-      Log.d(TAG, "checkAnswer: isSinglePlayerGame");
       playerOneHasGuessed = false;
       Snackbar.make(findViewById(android.R.id.content),
         getResources().getString(R.string.player_guess_distance, checkDistanceBetweenTargetAndGuess(playerOne)),
@@ -375,7 +391,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       getAndDisplayLocationToGuess();
     }
     if (isTwoPlayerGame) {
-      Log.d(TAG, "checkAnswer: isTwoPlayerGame");
       calculateAndGivePointToWinner();
       playerOneHasGuessed = false;
       playerTwoHasGuessed = false;
@@ -384,20 +399,38 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     checkAnswerFab.hide();
   }
 
-  private boolean isPlayerOneTurn(Icon markerIcon) {
-    return isTwoPlayerGame && !playerOneHasGuessed && markerIcon == playerOneIcon;
-  }
-
-  private boolean isPlayerTwoTurn(Icon markerIcon) {
-    return isTwoPlayerGame && !playerOneHasGuessed && markerIcon == playerTwoIcon;
-  }
-
   private boolean isNewTwoPlayerGame() {
     return playerOne.getPoints() == 0 && playerTwo.getPoints() == 0;
   }
 
   private void setPlayerTextViews(TextView view, int stringId, String playerName, int numOfPoints) {
     view.setText(getResources().getString(stringId, playerName, numOfPoints));
+  }
+
+  private void loadCities() throws IOException {
+    try {
+      // Use fromJson() method to convert GeoJSON file into a usable FeatureCollection
+      FeatureCollection featureCollection = FeatureCollection.fromJson(loadGeoJsonFromAsset("cities.geojson"));
+      GameActivity.listOfCities = featureCollection.features();
+    } catch (Exception exception) {
+      Log.d("GameActivity", "getFeatureCollectionFromJson: " + exception);
+    }
+  }
+
+  private String loadGeoJsonFromAsset(String filename) {
+    try {
+      // Load GeoJSON file from local asset folder
+      InputStream is = getAssets().open(filename);
+      int size = is.available();
+      byte[] buffer = new byte[size];
+      is.read(buffer);
+      is.close();
+      return new String(buffer, "UTF-8");
+    } catch (Exception exception) {
+      Log.d("GameActivity", "Exception Loading GeoJSON: " + exception.toString());
+      exception.printStackTrace();
+      return null;
+    }
   }
 
   // region activity lifecycle method overrides

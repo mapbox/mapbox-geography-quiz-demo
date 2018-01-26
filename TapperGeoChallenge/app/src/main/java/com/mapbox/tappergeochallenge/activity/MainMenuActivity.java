@@ -10,11 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
-import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.tappergeochallenge.R;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -34,11 +30,6 @@ public class MainMenuActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main_menu);
     ButterKnife.bind(this);
-    try {
-      loadCities();
-    } catch (IOException ex) {
-      Log.d(TAG, "onCreate: " + ex);
-    }
   }
 
   @OnClick(R.id.single_player_game_button)
@@ -59,10 +50,8 @@ public class MainMenuActivity extends AppCompatActivity {
     LayoutInflater inflater = this.getLayoutInflater();
     final View dialogView = inflater.inflate(R.layout.player_name_dialog, null);
     dialogBuilder.setView(dialogView);
-
-    final EditText playerOneName = (EditText) dialogView.findViewById(R.id.player_one_editText_name);
-    final EditText playerTwoName = (EditText) dialogView.findViewById(R.id.player_two_editText_name);
-
+    final EditText playerOneName = dialogView.findViewById(R.id.player_one_editText_name);
+    final EditText playerTwoName = dialogView.findViewById(R.id.player_two_editText_name);
     dialogBuilder.setTitle(R.string.dialog_title);
     dialogBuilder.setPositiveButton(getString(R.string.dialog_positive_button), new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int whichButton) {
@@ -76,31 +65,5 @@ public class MainMenuActivity extends AppCompatActivity {
     });
     AlertDialog nameDialog = dialogBuilder.create();
     nameDialog.show();
-  }
-
-  private void loadCities() throws IOException {
-    try {
-      // Use fromJson() method to convert GeoJSON file into a usable FeatureCollection
-      FeatureCollection featureCollection = FeatureCollection.fromJson(loadGeoJsonFromAsset("cities.geojson"));
-      GameActivity.listOfCities = featureCollection.features();
-    } catch (Exception exception) {
-      Log.e(TAG, "getFeatureCollectionFromJson: " + exception);
-    }
-  }
-
-  private String loadGeoJsonFromAsset(String filename) {
-    try {
-      // Load GeoJSON file from local asset folder
-      InputStream is = getAssets().open(filename);
-      int size = is.available();
-      byte[] buffer = new byte[size];
-      is.read(buffer);
-      is.close();
-      return new String(buffer, "UTF-8");
-    } catch (Exception exception) {
-      Log.e(TAG, "Exception Loading GeoJSON: " + exception.toString());
-      exception.printStackTrace();
-      return null;
-    }
   }
 }
