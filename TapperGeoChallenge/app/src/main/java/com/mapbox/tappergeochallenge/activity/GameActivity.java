@@ -89,7 +89,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     try {
       loadCities();
     } catch (IOException exception) {
-      Log.d("GameActivity", "onCreate: " + exception);
+      Log.d(TAG, "onCreate: " + exception);
     }
     // Mapbox access token is configured here. This needs to be called either in your application
     // object or in the same activity which contains the mapview.
@@ -187,7 +187,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   public boolean onInfoWindowClick(@NonNull Marker marker) {
     Icon iconOfSelectedMarker = marker.getIcon();
     if (isSinglePlayerGame && !playerOneHasGuessed) {
-      Log.d(TAG, "onInfoWindowClick: 1 ");
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
@@ -197,12 +196,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       checkAnswerFab.setImageResource(R.drawable.ic_done_white);
       checkAnswerFab.show();
     } else if (isTwoPlayerGame && !playerOneHasGuessed && iconOfSelectedMarker == playerOneIcon) {
-      Log.d(TAG, "onInfoWindowClick: 2 ");
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
     } else if (isTwoPlayerGame && playerOneHasGuessed && iconOfSelectedMarker == playerTwoIcon) {
-      Log.d(TAG, "onInfoWindowClick: 3 ");
       playerTwoHasGuessed = true;
       playerTwo.setSelectedLatitude(marker.getPosition().getLatitude());
       playerTwo.setSelectedLongitude(marker.getPosition().getLongitude());
@@ -416,7 +413,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       FeatureCollection featureCollection = FeatureCollection.fromJson(loadGeoJsonFromAsset("cities.geojson"));
       GameActivity.listOfCities = featureCollection.features();
     } catch (Exception exception) {
-      Log.d("GameActivity", "getFeatureCollectionFromJson: " + exception);
+      Log.d(TAG, "getFeatureCollectionFromJson: " + exception);
     }
   }
 
@@ -430,7 +427,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       is.close();
       return new String(buffer, "UTF-8");
     } catch (Exception exception) {
-      Log.d("GameActivity", "Exception Loading GeoJSON: " + exception.toString());
+      Log.d(TAG, "Exception Loading GeoJSON: " + exception.toString());
       exception.printStackTrace();
       return null;
     }
