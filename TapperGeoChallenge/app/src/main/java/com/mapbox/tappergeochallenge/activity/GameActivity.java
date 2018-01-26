@@ -191,6 +191,9 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
+      addTargetCityBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
+        randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
+      setCameraBoundsToSelectedAndTargetMarkers(marker);
       checkAnswerFab.setImageResource(R.drawable.ic_done_white);
       checkAnswerFab.show();
     } else if (isTwoPlayerGame && !playerOneHasGuessed && iconOfSelectedMarker == playerOneIcon) {
