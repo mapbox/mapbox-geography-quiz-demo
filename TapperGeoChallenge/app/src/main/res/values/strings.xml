@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Tapper GeoChallenge</string>
-    <string name="mapbox_access_token"></string>
+    <string name="mapbox_access_token">REPLACE_WITH_YOUR_MAPBOX_ACCESS_TOKEN</string>
     <string name="single_player_game_textview">Single Player Game</string>
     <string name="two_player_game_textview">Two Player Game</string>
     <string name="welcome_title">Are You Ready?</string>
@@ -17,10 +17,10 @@
     <string name="player_two_points">%1$s: %2$d points</string>
     <string name="player_guess_distance">Your guess was %1$f kilometers away</string>
     <string name="checking_choices">Checking distance</string>
-    <string name="player_one_already_chose_snackbar_message">You already confirmed your choice.\n
-        Click the red button to check your answer!</string>
-    <string name="both_players_have_already_chose_snackbar_message">Both players already confirmed their choices.\n
-        Click the red button to check your answers!</string>
+    <string name="player_one_already_chose_snackbar_message">You have already confirmed your choice.\n
+        Tap the red button to check your answer!</string>
+    <string name="both_players_have_already_chose_snackbar_message">Both players have already confirmed their choices.\n
+        Tap the red button to check your answers!</string>
 
     <string name="winner_announcement">%1$s wins!</string>
     <string name="whoops_error">Whoops! Looks like there\'s a problem. Sorry :(</string>
