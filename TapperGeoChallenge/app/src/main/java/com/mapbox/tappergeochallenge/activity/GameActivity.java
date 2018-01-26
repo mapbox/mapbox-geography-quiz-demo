@@ -97,7 +97,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     setOneOrTwoPlayerGame(intent);
     playerOne = new Player();
     playerTwo = new Player();
-
+    playerOneHasGuessed = false;
+    playerTwoHasGuessed = false;
     if (isSinglePlayerGame) {
       playerOnePointsTextView.setVisibility(View.GONE);
       playerTwoPointsTextView.setVisibility(View.GONE);
@@ -123,13 +124,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
   @Override
   public void onMapClick(@NonNull LatLng point) {
-    if (isSinglePlayerGame && !playerOneHasGuessed && !playerTwoHasGuessed) {
+    if (isSinglePlayerGame && !playerOneHasGuessed) {
       mapboxMap.clear();
       makeMarker(point, getString(R.string.single_player_game_marker_title),
         getString(R.string.click_here_to_confirm_selection),
         playerOneIcon);
     }
-    if (isSinglePlayerGame && playerOneHasGuessed && !playerTwoHasGuessed) {
+
+    // Prevents single player from changing guessed location
+    if (isSinglePlayerGame && playerOneHasGuessed) {
       Snackbar.make(findViewById(android.R.id.content),
         R.string.player_one_already_chose_snackbar_message,
         Snackbar.LENGTH_SHORT).show();
@@ -159,21 +162,18 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         R.string.both_players_have_already_chose_snackbar_message,
         Snackbar.LENGTH_SHORT).show();
     }
-
   }
 
   @Override
   public boolean onInfoWindowClick(@NonNull Marker marker) {
+    Log.d(TAG, "onInfoWindowClick: ");
     Icon iconOfSelectedMarker = marker.getIcon();
-    if (soloPlayerHasNotGuessed()) {
-      Log.d(TAG, "onInfoWindowClick: soloPlayerHasNotGuessed() == " + true);
+    if (isSinglePlayerGame && !playerOneHasGuessed) {
       playerOneHasGuessed = true;
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
-      addBullsEyeMarkerToMap(marker.getPosition(), randomTargetCity.getCityName(), bullsEyeIcon);
       checkAnswerFab.setImageResource(R.drawable.ic_done_white);
       checkAnswerFab.show();
-      moveCameraToSelectedMarker(marker);
     }
 
     if (isPlayerOneTurn(iconOfSelectedMarker)) {
@@ -183,14 +183,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     if (isPlayerTwoTurn(iconOfSelectedMarker)) {
+      playerTwoHasGuessed = true;
       playerTwo.setSelectedLatitude(marker.getPosition().getLatitude());
       playerTwo.setSelectedLongitude(marker.getPosition().getLongitude());
       checkAnswerFab.setImageResource(R.drawable.ic_done_all_white);
       checkAnswerFab.show();
-      addBullsEyeMarkerToMap(marker.getPosition(), randomTargetCity.getCityName(), bullsEyeIcon);
-      moveCameraToSelectedMarker(marker);
-      playerTwoHasGuessed = true;
     }
+    moveCameraToSelectedMarker(marker,isSinglePlayerGame);
+    addBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
+      randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
     return false;
   }
 
@@ -225,16 +226,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     displayPlayersPoints();
   }
 
-  private void moveCameraToSelectedMarker(Marker marker) {
+  private void moveCameraToSelectedMarker(Marker marker, boolean singlePlayerGame) {
     LatLngBounds latLngBounds = null;
     if (marker != null) {
-      if (isSinglePlayerGame) {
+      if (singlePlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
           .include(marker.getPosition())
           .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
           .build();
       }
-      if (isTwoPlayerGame) {
+      if (singlePlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
           .include(marker.getPosition())
           .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
@@ -266,6 +267,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     String typeOfGame = intent.getStringExtra(TYPE_OF_GAME);
     isSinglePlayerGame = typeOfGame.equals(ONE_PLAYER_GAME);
     isTwoPlayerGame = typeOfGame.equals(TWO_PLAYER_GAME);
+    Log.d(TAG, "setOneOrTwoPlayerGame: isSinglePlayerGame == " + isSinglePlayerGame);
+    Log.d(TAG, "setOneOrTwoPlayerGame: isTwoPlayerGame == " + isTwoPlayerGame);
   }
 
   private void getAndDisplayLocationToGuess() {
@@ -364,6 +367,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   @OnClick(R.id.check_answer_fab)
   public void checkAnswer(View view) {
     if (isSinglePlayerGame) {
+      Log.d(TAG, "checkAnswer: isSinglePlayerGame");
       playerOneHasGuessed = false;
       Snackbar.make(findViewById(android.R.id.content),
         getResources().getString(R.string.player_guess_distance, checkDistanceBetweenTargetAndGuess(playerOne)),
@@ -371,16 +375,13 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       getAndDisplayLocationToGuess();
     }
     if (isTwoPlayerGame) {
+      Log.d(TAG, "checkAnswer: isTwoPlayerGame");
       calculateAndGivePointToWinner();
       playerOneHasGuessed = false;
       playerTwoHasGuessed = false;
     }
     mapboxMap.clear();
     checkAnswerFab.hide();
-  }
-
-  private boolean soloPlayerHasNotGuessed() {
-    return isSinglePlayerGame && !playerOneHasGuessed;
   }
 
   private boolean isPlayerOneTurn(Icon markerIcon) {
