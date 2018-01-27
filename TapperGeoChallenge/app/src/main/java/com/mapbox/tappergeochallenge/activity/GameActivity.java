@@ -45,14 +45,14 @@ import butterknife.OnClick;
 
 import static com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds;
 import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
-import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
-import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME;
+import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME_KEY;
+import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME_KEY;
 import static com.mapbox.tappergeochallenge.StringConstants.TWO_PLAYER_GAME;
-import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME;
+import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME_KEY;
 
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, MapboxMap.OnMapClickListener,
-  MapboxMap.OnInfoWindowClickListener, MapboxMap.OnMarkerClickListener {
+    MapboxMap.OnInfoWindowClickListener, MapboxMap.OnMarkerClickListener {
 
   @BindView(R.id.mapview)
   MapView mapView;
@@ -101,6 +101,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Bind views via the third-party Butterknife library
     ButterKnife.bind(this);
+
     intent = getIntent();
 
     // Determine whether a one or two person game was selected in the previous activity/screen
@@ -114,7 +115,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     playerOneHasGuessed = false;
     playerTwoHasGuessed = false;
 
-    // Set the visibility of parts of the cardview that's on top of the Mapbox map
+    // Set the visibility of parts of the card view that's on top of the Mapbox map
     if (isSinglePlayerGame) {
       playerOnePointsTextView.setVisibility(View.GONE);
       playerTwoPointsTextView.setVisibility(View.GONE);
@@ -147,39 +148,39 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     if (isSinglePlayerGame && !playerOneHasGuessed) {
       mapboxMap.clear();
       makeMarker(point, getString(R.string.single_player_game_marker_title),
-        getString(R.string.click_here_to_confirm_selection),
-        playerOneIcon);
+          getString(R.string.click_here_to_confirm_selection),
+          playerOneIcon);
     }
 
     if (isSinglePlayerGame && playerOneHasGuessed) {
       Snackbar.make(findViewById(android.R.id.content),
-        R.string.player_one_already_chose_snackbar_message,
-        Snackbar.LENGTH_SHORT).show();
+          R.string.player_one_already_chose_snackbar_message,
+          Snackbar.LENGTH_SHORT).show();
     }
 
     if (isTwoPlayerGame && !playerOneHasGuessed && !playerTwoHasGuessed) {
       mapboxMap.clear();
       makeMarker(point, getResources().getString(R.string.player_one_selection, playerOne.getPlayerName()), getString(R.string.click_here_to_confirm_selection),
-        playerOneIcon);
+          playerOneIcon);
     }
 
     if (isTwoPlayerGame && playerOneHasGuessed && !playerTwoHasGuessed) {
       makeMarker(point, getResources().getString(R.string.player_two_selection, playerTwo.getPlayerName()),
-        getString(R.string.click_here_to_confirm_selection),
-        playerTwoIcon);
+          getString(R.string.click_here_to_confirm_selection),
+          playerTwoIcon);
 
-      for (int x = 0; x < mapboxMap.getMarkers().size(); x++) {
-        if (mapboxMap.getMarkers().get(x).getIcon().equals(playerTwoIcon) &&
-          mapboxMap.getMarkers().get(x).getPosition().getLatitude() != point.getLatitude()) {
-          mapboxMap.getMarkers().get(x).remove();
+      for (Marker singleMarker : mapboxMap.getMarkers()) {
+        if (singleMarker.getIcon().equals(playerTwoIcon) &&
+            singleMarker.getPosition().getLatitude() != point.getLatitude()) {
+          singleMarker.remove();
         }
       }
     }
 
     if (isTwoPlayerGame && playerOneHasGuessed && playerTwoHasGuessed) {
       Snackbar.make(findViewById(android.R.id.content),
-        R.string.both_players_have_already_chose_snackbar_message,
-        Snackbar.LENGTH_SHORT).show();
+          R.string.both_players_have_already_chose_snackbar_message,
+          Snackbar.LENGTH_SHORT).show();
     }
   }
 
@@ -191,7 +192,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       playerOne.setSelectedLatitude(marker.getPosition().getLatitude());
       playerOne.setSelectedLongitude(marker.getPosition().getLongitude());
       addTargetCityBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
-        randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
+          randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
       setCameraBoundsToSelectedAndTargetMarkers(marker);
       checkAnswerFab.setImageResource(R.drawable.ic_done_white);
       checkAnswerFab.show();
@@ -204,12 +205,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
       playerTwo.setSelectedLatitude(marker.getPosition().getLatitude());
       playerTwo.setSelectedLongitude(marker.getPosition().getLongitude());
       addTargetCityBullsEyeMarkerToMap(new LatLng(randomTargetCity.getCityLocation().getLatitude(),
-        randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
+          randomTargetCity.getCityLocation().getLongitude()), randomTargetCity.getCityName(), bullsEyeIcon);
       setCameraBoundsToSelectedAndTargetMarkers(marker);
       checkAnswerFab.setImageResource(R.drawable.ic_done_all_white);
       checkAnswerFab.show();
     }
-
     return false;
   }
 
@@ -217,10 +217,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   public boolean onMarkerClick(@NonNull Marker marker) {
     if (marker.getIcon() == bullsEyeIcon) {
       CameraPosition position = new CameraPosition.Builder()
-        .target(new LatLng(marker.getPosition().getLatitude(),
-          marker.getPosition().getLongitude()))
-        .zoom(5)
-        .build();
+          .target(new LatLng(marker.getPosition().getLatitude(),
+              marker.getPosition().getLongitude()))
+          .zoom(5)
+          .build();
       mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 2500);
     }
     return false;
@@ -239,8 +239,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   }
 
   private void displayPlayerNamesAndPoints() {
-    playerOne.setPlayerName(intent.getStringExtra(PLAYER_ONE_NAME));
-    playerTwo.setPlayerName(intent.getStringExtra(PLAYER_TWO_NAME));
+    playerOne.setPlayerName(intent.getStringExtra(PLAYER_ONE_NAME_KEY));
+    playerTwo.setPlayerName(intent.getStringExtra(PLAYER_TWO_NAME_KEY));
     displayPlayersPoints();
   }
 
@@ -249,16 +249,16 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     if (marker != null) {
       if (isSinglePlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
-          .include(marker.getPosition())
-          .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
-          .build();
+            .include(marker.getPosition())
+            .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
+            .build();
       }
       if (isTwoPlayerGame) {
         latLngBounds = new LatLngBounds.Builder()
-          .include(marker.getPosition())
-          .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
-          .include(new LatLng(playerOne.getSelectedLatitude(), playerOne.getSelectedLongitude()))
-          .build();
+            .include(marker.getPosition())
+            .include(new LatLng(randomCityLocation.getLatitude(), randomCityLocation.getLongitude()))
+            .include(new LatLng(playerOne.getSelectedLatitude(), playerOne.getSelectedLongitude()))
+            .build();
       }
       if (latLngBounds != null) {
         mapboxMap.easeCamera(newLatLngBounds(latLngBounds, CAMERA_BOUNDS_PADDING), EASE_CAMERA_SPEED_IN_MS);
@@ -268,10 +268,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
   private void makeMarker(LatLng markerPoint, String title, String snippet, Icon chosenIcon) {
     Marker marker = mapboxMap.addMarker(new MarkerOptions()
-      .position(markerPoint)
-      .title(title)
-      .snippet(snippet)
-      .icon(chosenIcon));
+        .position(markerPoint)
+        .title(title)
+        .snippet(snippet)
+        .icon(chosenIcon));
     mapboxMap.selectMarker(marker);
   }
 
@@ -282,7 +282,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
   }
 
   private void setOneOrTwoPlayerGame(Intent intent) {
-    String typeOfGame = intent.getStringExtra(TYPE_OF_GAME);
+    String typeOfGame = intent.getStringExtra(TYPE_OF_GAME_KEY);
     isSinglePlayerGame = typeOfGame.equals(ONE_PLAYER_GAME);
     isTwoPlayerGame = typeOfGame.equals(TWO_PLAYER_GAME);
   }
@@ -302,34 +302,34 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     locationToGuess.setText(getResources().getString(R.string.location_to_guess, randomTargetCity.getCityName()));
   }
 
-  // Uses Mapbox's Turf library
+  // Uses Mapbox's Turf library to get distance
   private double checkDistanceBetweenTargetAndGuess(Player playerToCheck) {
     Point randomPoint = Point.fromLngLat(randomCityLocation.getLongitude(),
-      randomCityLocation.getLatitude());
+        randomCityLocation.getLatitude());
     Point selectedPoint = Point.fromLngLat(playerToCheck.getSelectedLongitude(),
-      playerToCheck.getSelectedLatitude());
+        playerToCheck.getSelectedLatitude());
     return TurfMeasurement.distance(randomPoint, selectedPoint);
   }
 
   private void addTargetCityBullsEyeMarkerToMap(LatLng location, String title, Icon chosenIcon) {
     mapboxMap.addMarker(new MarkerOptions()
-      .position(location)
-      .title(title)
-      .icon(chosenIcon));
+        .position(location)
+        .title(title)
+        .icon(chosenIcon));
   }
 
   private void calculateAndGivePointToWinner() {
     if (checkDistanceBetweenTargetAndGuess(playerOne) < checkDistanceBetweenTargetAndGuess(playerTwo)) {
       Snackbar.make(findViewById(android.R.id.content),
-        getResources().getString(R.string.winner_announcement, playerOne.getPlayerName()),
-        Snackbar.LENGTH_SHORT).show();
+          getResources().getString(R.string.winner_announcement, playerOne.getPlayerName()),
+          Snackbar.LENGTH_SHORT).show();
       playerOne.setPoints(playerOne.getPoints() + 1);
       displayPlayersPoints();
       flashTextAsPointIsAdded(playerOnePointsTextView);
     } else {
       Snackbar.make(findViewById(android.R.id.content),
-        getResources().getString(R.string.winner_announcement, playerTwo.getPlayerName()),
-        Snackbar.LENGTH_SHORT).show();
+          getResources().getString(R.string.winner_announcement, playerTwo.getPlayerName()),
+          Snackbar.LENGTH_SHORT).show();
       playerTwo.setPoints(playerTwo.getPoints() + 1);
       displayPlayersPoints();
       flashTextAsPointIsAdded(playerTwoPointsTextView);
@@ -386,8 +386,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     if (isSinglePlayerGame) {
       playerOneHasGuessed = false;
       Snackbar.make(findViewById(android.R.id.content),
-        getResources().getString(R.string.player_guess_distance, checkDistanceBetweenTargetAndGuess(playerOne)),
-        Snackbar.LENGTH_SHORT).show();
+          getResources().getString(R.string.player_guess_distance, checkDistanceBetweenTargetAndGuess(playerOne)),
+          Snackbar.LENGTH_SHORT).show();
       getAndDisplayLocationToGuess();
     }
     if (isTwoPlayerGame) {
