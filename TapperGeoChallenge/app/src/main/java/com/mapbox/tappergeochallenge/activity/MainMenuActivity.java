@@ -16,10 +16,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static com.mapbox.tappergeochallenge.StringConstants.ONE_PLAYER_GAME;
-import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME;
-import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME;
+import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_ONE_NAME_KEY;
+import static com.mapbox.tappergeochallenge.StringConstants.PLAYER_TWO_NAME_KEY;
 import static com.mapbox.tappergeochallenge.StringConstants.TWO_PLAYER_GAME;
-import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME;
+import static com.mapbox.tappergeochallenge.StringConstants.TYPE_OF_GAME_KEY;
 
 public class MainMenuActivity extends AppCompatActivity {
 
@@ -36,7 +36,7 @@ public class MainMenuActivity extends AppCompatActivity {
   public void singlePlayerGame(View view) {
     Log.d(TAG, "singlePlayerGame: ");
     Intent intent = new Intent(getApplicationContext(), GameActivity.class);
-    intent.putExtra(TYPE_OF_GAME, ONE_PLAYER_GAME);
+    intent.putExtra(TYPE_OF_GAME_KEY, ONE_PLAYER_GAME);
     startActivity(intent);
   }
 
@@ -57,9 +57,9 @@ public class MainMenuActivity extends AppCompatActivity {
       public void onClick(DialogInterface dialog, int whichButton) {
         Log.d(TAG, "twoPlayerGame: ");
         Intent intent = new Intent(getApplicationContext(), GameActivity.class);
-        intent.putExtra(TYPE_OF_GAME, TWO_PLAYER_GAME);
-        intent.putExtra(PLAYER_ONE_NAME, playerOneName.getText().toString());
-        intent.putExtra(PLAYER_TWO_NAME, playerTwoName.getText().toString());
+        intent.putExtra(TYPE_OF_GAME_KEY, TWO_PLAYER_GAME);
+        intent.putExtra(PLAYER_ONE_NAME_KEY, playerOneName.getText().toString());
+        intent.putExtra(PLAYER_TWO_NAME_KEY, playerTwoName.getText().toString());
         startActivity(intent);
       }
     });
