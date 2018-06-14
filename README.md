@@ -1,5 +1,4 @@
-# mapbox-geography-quiz-demo
-
+# Mapbox Geography Quiz Demo
 This demo shows how gaming can be combined with the Mapbox Maps SDK for Android. Using a list of cities around the world, a one or two player game geography guessing game can be built on top of a Mapbox map.
 
 ## Instructions to open this project on your Android device
