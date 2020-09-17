@@ -1,37 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_marginEnd="8dp"
-              android:layout_marginLeft="8dp"
-              android:layout_marginRight="8dp"
-              android:layout_marginStart="40dp"
-              android:layout_marginTop="8dp"
-              android:orientation="vertical">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp">
 
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/player_one_textview"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/player_one_name_editext_in_dialog"/>
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/player_one_name_editext_in_dialog"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/player_one_editText_name"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="text"/>
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/player_one_textview"
+        app:layout_constraintTop_toBottomOf="@+id/player_one_textview" />
 
 
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/player_two_textview"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/player_two_name_editext_in_dialog"/>
+        android:text="@string/player_two_name_editext_in_dialog"
+        app:layout_constraintStart_toStartOf="@+id/player_one_textview"
+        app:layout_constraintTop_toBottomOf="@+id/player_one_editText_name" />
 
     <EditText
         android:id="@+id/player_two_editText_name"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="text"/>
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="@+id/player_one_editText_name"
+        app:layout_constraintStart_toStartOf="@+id/player_one_textview"
+        app:layout_constraintTop_toBottomOf="@+id/player_two_textview" />
 
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
