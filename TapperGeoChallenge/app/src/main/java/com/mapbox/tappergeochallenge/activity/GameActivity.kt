@@ -124,6 +124,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * Set the onClickListener for the [check_answer_fab].
+     */
     private fun initAnswerButton() {
         check_answer_fab.setOnClickListener {
             if (isSinglePlayerGame) {
@@ -149,12 +152,19 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * Reset UI once a city guess round has finished.
+     */
     private fun resetUiAfterAnswerDistanceCheck() {
         setBullsEyeMarker(currentCityToGuess?.latLng!!)
         setCameraBoundsToSelectedAndTargetMarkers()
         setNewRandomCityToGuess()
     }
 
+    /**
+     * Process the onMapClick logic based on whether it's a multi-player
+     * game and who already guessed.
+     */
     override fun onMapClick(mapClickPoint: LatLng): Boolean {
         if (isSinglePlayerGame) {
             setPlayerOneMarker(mapClickPoint)
@@ -172,6 +182,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         return true
     }
 
+    /**
+     * Create/adjust the first player's guess icon.
+     */
     private fun setPlayerOneMarker(newLatLng: LatLng) {
         if (playerOneSymbol == null) {
             playerOneSymbol = symbolManager.create(SymbolOptions()
@@ -187,6 +200,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * Create/adjust the second player's guess icon.
+     */
     private fun setPlayerTwoMarker(newLatLng: LatLng) {
         if (playerTwoSymbol == null) {
             playerTwoSymbol = symbolManager.create(SymbolOptions()
@@ -202,6 +218,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * Create/adjust the target city icon.
+     */
     private fun setBullsEyeMarker(bullsEyeLocation: LatLng) {
         if (bullsEyeSymbol == null) {
             bullsEyeSymbol = symbolManager.create(SymbolOptions()
@@ -217,6 +236,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * Move the map camera to show certain coordinates.
+     */
     private fun setCameraBoundsToSelectedAndTargetMarkers() {
         val latLngBounds: LatLngBounds = if (isSinglePlayerGame) {
             LatLngBounds.Builder()
@@ -234,6 +256,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
                 CAMERA_BOUNDS_PADDING), EASE_CAMERA_SPEED_IN_MS)
     }
 
+    /**
+     * Retrieve and set a new city as the target city to guess.
+     */
     private fun setNewRandomCityToGuess() {
         if (listOfCityFeatures.isNotEmpty()) {
             val randomCityFromList = listOfCityFeatures[Random().nextInt(listOfCityFeatures.size).plus(1)]
@@ -266,6 +291,10 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         }
     }
 
+    /**
+     * If it's a multi-player game, calculate which player's guess was closer to the
+     * target city
+     */
     private fun calculateAndGivePointToWinner() {
         when (getDistanceBetweenTargetAndGuess(playerOne) < getDistanceBetweenTargetAndGuess(playerTwo)) {
             true -> {
@@ -286,6 +315,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         displayPlayersPoints()
     }
 
+    /**
+     * Update the players' point [TextView]s.
+     */
     private fun displayPlayersPoints() {
         setPlayerTextViews(player_one_points_textview, R.string.player_one_points, if (playerOne.name!!.isEmpty()) getString(R.string.default_player_one_name) else playerOne.name!!, playerOne.points.toInt())
         setPlayerTextViews(player_two_points_textview, R.string.player_two_points, if (playerTwo?.name!!.isEmpty()) getString(R.string.default_player_two_name) else playerTwo!!.name!!, playerTwo!!.points.toInt())
@@ -295,6 +327,9 @@ open class GameActivity : AppCompatActivity(), OnMapReadyCallback, MapboxMap.OnM
         textView.text = String.format(getString(stringId), playerName, numOfPoints, getString(R.string.points))
     }
 
+    /**
+     * Load the file that has the list of cities to guess from.
+     */
     private fun loadGeoJsonFromAsset(filename: String): String {
         return try {
             // Load GeoJSON file from local asset folder
